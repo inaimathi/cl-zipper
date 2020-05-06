@@ -12,10 +12,10 @@
    (is (root (delete (down (right (right (down zlist))))))
        '(1 2 (4 (5 6) (7 8) ((9 10) 11 (12))))
        "Deleting deep leaves works")
-   (is (root (delete (right (down (right (right (down *ZIP*)))))))
+   (is (root (delete (right (down (right (right (down zlist)))))))
        '(1 2 (3 (5 6) (7 8) ((9 10) 11 (12))))
        "Deleting deep right leaves works")
-   (is (root (delete (right (right (down (right (right (down *ZIP*))))))))
+   (is (root (delete (right (right (down (right (right (down zlist))))))))
        '(1 2 (3 4 (7 8) ((9 10) 11 (12))))
        "Deleting deep parents works")))
 
