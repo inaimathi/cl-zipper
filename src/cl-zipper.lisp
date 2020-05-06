@@ -11,6 +11,7 @@
   (fn-children)
   (fn-make-node))
 
+;;;;;;;;;; Constructors
 (defun zipper (branch? children make-node root)
   (make-loc
    :node root
@@ -22,6 +23,7 @@
 (defun make-node (zipper children)
   (funcall (loc-fn-make-node zipper) zipper children))
 
+;;;;;;;;;; Selectors
 (defun branch? (zipper) (funcall (loc-fn-branch? zipper) (loc-node zipper)))
 (defun children (zipper)
   (funcall
@@ -30,6 +32,16 @@
 (defun node (zipper) (loc-node zipper))
 (defun path (zipper) (loc-path zipper))
 
+(defun lefts (zipper)
+  (when (loc-path zipper)
+    (reverse (path-left (loc-path zipper)))))
+
+(defun rights (zipper)
+  (when (loc-path zipper)
+    (path-right (loc-path zipper))))
+
+;;;;;;;;;; Navigation
+;;;;;;;;;;;;;;; Basic navigation
 (defun down (zipper)
   (when (children zipper)
     (let ((fresh (copy-loc zipper)))
@@ -75,19 +87,16 @@
 	     :right (rest (path-right (path zipper)))))
       fresh)))
 
+;;;;;;;;;;;;;;; Compound navigation
 (defun root (zipper)
   (if-let (z (until zipper #'up))
     (node z)))
 
 (defun leftmost (zipper) (until zipper #'left))
-(defun lefts (zipper)
-  (when (loc-path zipper)
-    (reverse (path-left (loc-path zipper)))))
-(defun rightmost (zipper) (until zipper #'right))
-(defun rights (zipper)
-  (when (loc-path zipper)
-    (path-right (loc-path zipper))))
 
+(defun rightmost (zipper) (until zipper #'right))
+
+;;;;;;;;;; Modification
 (defun replace (zipper node)
   (let ((fresh (copy-loc zipper)))
     (setf (loc-node fresh) node)
@@ -95,6 +104,19 @@
 
 (defun edit (zipper f &rest args)
   (replace zipper (apply f (node zipper) args)))
+
+(defun delete (zipper)
+  (when (path zipper)
+    (let ((fresh (copy-loc zipper))
+	  (fresh-path (copy-path (loc-path zipper))))
+      (cond ((rights zipper)
+	     (setf (loc-node fresh) (pop (path-right fresh-path))
+		   (loc-path fresh) fresh-path))
+	    ((lefts zipper)
+	     (setf (loc-node fresh) (pop (path-left fresh-path))
+		   (loc-path fresh) fresh-path))
+	    (t (setf (loc-path fresh) (path-path fresh-path))))
+      fresh)))
 
 (defun insert-child (zipper node)
   (replace
@@ -124,6 +146,7 @@
     (push node (path-left fresh-path))
     (setf (loc-path fresh) fresh-path)
     fresh))
+
 (defun splice-left (zipper node-list)
   (reduce #'insert-left node-list :initial-value zipper))
 
@@ -133,21 +156,12 @@
     (push node (path-right fresh-path))
     (setf (loc-path fresh) fresh-path)
     fresh))
+
 (defun splice-right (zipper node-list)
   (reduce #'insert-right (reverse node-list) :initial-value zipper))
 
-(defun next (zipper) :todo)
-(defun prev (zipper) :todo)
 
-(defun delete (zipper)
-  (when (path zipper)
-    (let ((fresh (copy-loc zipper))
-	  (fresh-path (copy-path (loc-path zipper))))
-      (cond ((rights zipper)
-	     (setf (loc-node fresh) (pop (path-right fresh-path))
-		   (loc-path fresh) fresh-path))
-	    ((lefts zipper)
-	     (setf (loc-node fresh) (pop (path-left fresh-path))
-		   (loc-path fresh) fresh-path))
-	    (t (setf (loc-path fresh) (path-path fresh-path))))
-      fresh)))
+;;;;;;;;;; Traversal
+;; (defun next (zipper) :todo)
+;; (defun prev (zipper) :todo)
+;; (defun remove (zipper) :todo)
