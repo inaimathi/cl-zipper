@@ -3,32 +3,36 @@
 (defstruct path
   (left) (path) (right))
 
-(defstruct loc
-  (node)
-  (path)
-
+(defstruct api
   (fn-branch?)
   (fn-children)
   (fn-make-node))
+
+(defstruct loc
+  (node)
+  (path)
+  (api))
 
 ;;;;;;;;;; Constructors
 (defun zipper (branch? children make-node root)
   (make-loc
    :node root
-   :fn-branch? branch? :fn-children children :fn-make-node make-node))
+   :api (make-api :fn-branch? branch?
+		  :fn-children children
+		  :fn-make-node make-node)))
 
 (defmethod make-zipper ((thing list))
   (zipper #'listp #'identity (lambda (node children) (declare (ignore node)) children) thing))
 
 (defun make-node (zipper children)
-  (funcall (loc-fn-make-node zipper) zipper children))
+  (funcall (api-fn-make-node (loc-api zipper)) zipper children))
 
 ;;;;;;;;;; Selectors
-(defun branch? (zipper) (funcall (loc-fn-branch? zipper) (loc-node zipper)))
+(defun branch? (zipper) (funcall (api-fn-branch? (loc-api zipper)) (loc-node zipper)))
 (defun children (zipper)
   (when (branch? zipper)
     (funcall
-     (loc-fn-children zipper)
+     (api-fn-children (loc-api zipper))
      (loc-node zipper))))
 (defun node (zipper) (loc-node zipper))
 (defun path (zipper) (loc-path zipper))
@@ -164,6 +168,9 @@
 
 ;;;;;;;;;; Traversal
 ;;;;;;;;;;;;;;; Depth-first interface adapted from clojure.zip
+(defun bf-next (zipper)
+  )
+
 (defun next (zipper)
   (or (and (branch? zipper) (down zipper))
       (right zipper)
