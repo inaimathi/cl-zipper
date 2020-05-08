@@ -7,10 +7,18 @@
    (subtest "Navigation"
 
      (subtest "Basics"
-       (is (-> zlist down node) 1
-	   "Going down gets you the next level")
        (is (-> zlist down down) nil
 	   "Going down from a leaf node gets you NIL")
+       (is (-> zlist right) nil
+	   "Going right when there is no more right nodes fails")
+       (is (-> zlist left) nil
+	   "Going left when there is no more left nodes fails")
+       (is (-> zlist down node) 1
+	   "Going down gets you the next level")
+       (is (-> zlist down right node) 2
+	   "Down and right compose")
+       (is (-> zlist down rightmost down rightmost left node) '(7 8)
+	   "Down, rightmost and left compose")
        (is (-> zlist down right right down node) 3
 	   "Deep navigation works"))
 
@@ -59,14 +67,3 @@
        (is (root (delete (right (right (down (right (right (down zlist))))))))
 	   '(1 2 (3 4 (7 8) ((9 10) 11 (12))))
 	   "Deleting deep parents works")))))
-
-;; (tests
-;;  (is (+ 2 3) 5 "Addition works")
-;;  (is (+ 2 3) 6 "Intentionally fails")
-
-;;  (for-all ((a a-number) (b a-number))
-;; 	  (is= (+ a b) (+ b a))
-;; 	  "Addition is commutative")
-;;  (for-all ((a a-number) (b a-number))
-;; 	  (is= (- a b) (- b a))
-;; 	  "Subtraction is not, so this should fail"))
