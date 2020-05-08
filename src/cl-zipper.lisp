@@ -89,21 +89,18 @@
 
 ;;;;;;;;;;;;;;; Compound navigation
 (defun root (zipper)
-  (if-let (z (until zipper #'up))
+  (if-let (z (while zipper #'up))
     (node z)))
 
-(defun leftmost (zipper) (until zipper #'left))
+(defun leftmost (zipper) (while zipper #'left))
 
-(defun rightmost (zipper) (until zipper #'right))
+(defun rightmost (zipper) (while zipper #'right))
 
 ;;;;;;;;;; Modification
 (defun replace (zipper node)
   (let ((fresh (copy-loc zipper)))
     (setf (loc-node fresh) node)
     fresh))
-
-(defun edit (zipper f &rest args)
-  (replace zipper (apply f (node zipper) args)))
 
 (defun delete (zipper)
   (when (path zipper)
@@ -124,7 +121,7 @@
    (make-node
     zipper
     (cond ((not (branch? zipper))
-	   (list (node zipper) node))
+	   (list node (node zipper)))
 	  ((children zipper)
 	   (cons node (children zipper)))
 	  (t (list node))))))
@@ -147,15 +144,18 @@
     (setf (loc-path fresh) fresh-path)
     fresh))
 
-(defun splice-left (zipper node-list)
-  (reduce #'insert-left node-list :initial-value zipper))
-
 (defun insert-right (zipper node)
   (let ((fresh (copy-loc zipper))
 	(fresh-path (copy-path (loc-path zipper))))
     (push node (path-right fresh-path))
     (setf (loc-path fresh) fresh-path)
     fresh))
+
+(defun edit (zipper f &rest args)
+  (replace zipper (apply f (node zipper) args)))
+
+(defun splice-left (zipper node-list)
+  (reduce #'insert-left node-list :initial-value zipper))
 
 (defun splice-right (zipper node-list)
   (reduce #'insert-right (reverse node-list) :initial-value zipper))

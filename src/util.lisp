@@ -7,7 +7,7 @@
 	   (let ((,name ,tmp)) ,then)
 	   ,else))))
 
-(defun until (zipper f)
+(defun while (zipper f)
   (let ((z zipper))
     (loop for next = (funcall f z) while next
        when next do (setf z next))

@@ -2,7 +2,7 @@
 (defpackage #:cl-zipper
   (:use #:cl)
   (:shadow #:remove #:delete #:replace)
-  (:export #:until
+  (:export #:while
 	   #:zipper #:make-zipper
 	   #:make-node #:branch? #:children #:node #:path
 	   #:down #:up #:left #:right #:root ;; #:next #:prev
