@@ -26,9 +26,10 @@
 ;;;;;;;;;; Selectors
 (defun branch? (zipper) (funcall (loc-fn-branch? zipper) (loc-node zipper)))
 (defun children (zipper)
-  (funcall
-   (loc-fn-children zipper)
-   (loc-node zipper)))
+  (when (branch? zipper)
+    (funcall
+     (loc-fn-children zipper)
+     (loc-node zipper))))
 (defun node (zipper) (loc-node zipper))
 (defun path (zipper) (loc-path zipper))
 
@@ -162,6 +163,31 @@
 
 
 ;;;;;;;;;; Traversal
-;; (defun next (zipper) :todo)
-;; (defun prev (zipper) :todo)
-;; (defun remove (zipper) :todo)
+;;;;;;;;;;;;;;; Depth-first interface adapted from clojure.zip
+(defun next (zipper)
+  (or (and (branch? zipper) (down zipper))
+      (right zipper)
+      (labels ((backtrack (z)
+		 (when (up z)
+		   (or (right (up z)) (backtrack (up z))))))
+	(backtrack zipper))))
+
+(defun prev (zipper)
+  (if-let (lft (left zipper))
+    (labels ((backtrack (z)
+	       (if-let (child (and (branch? z) (down z)))
+		 (backtrack (rightmost child))
+		 z)))
+      (backtrack lft))
+    (up zipper)))
+
+(defun remove (zipper) (prev (delete zipper)))
+
+(defun find (zipper f)
+  (if (and (not (branch? zipper)) (funcall f (node zipper)))
+      zipper
+      (let ((z zipper))
+	(loop do (setf z (next z)) while z
+	   if (and (not (branch? z))
+		   (funcall f (node z)))
+	   return z))))

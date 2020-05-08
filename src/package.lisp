@@ -1,12 +1,12 @@
 ;;;; src/package.lisp
 (defpackage #:cl-zipper
   (:use #:cl)
-  (:shadow #:remove #:delete #:replace)
-  (:export #:while
-	   #:zipper #:make-zipper
+  (:shadow #:remove #:delete #:replace #:find)
+  (:export #:zipper #:make-zipper
 	   #:make-node #:branch? #:children #:node #:path
-	   #:down #:up #:left #:right #:root ;; #:next #:prev
+	   #:down #:up #:left #:right #:root #:next #:prev
 	   #:leftmost #:lefts #:rightmost #:rights
-	   #:replace #:edit #:delete ;; #:remove
+	   #:replace #:edit #:delete #:remove
 	   #:append-child #:insert-child ;; #:append-children #:insert-children
-	   #:insert-left #:splice-left #:insert-right #:splice-right))
+	   #:insert-left #:splice-left #:insert-right #:splice-right
+	   #:find))
