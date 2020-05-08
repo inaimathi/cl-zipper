@@ -12,3 +12,11 @@
     (loop for next = (funcall f z) while next
        when next do (setf z next))
     z))
+
+(defmacro -> (exp &rest ops)
+  (reduce
+   (lambda (memo op)
+     (if (atom op)
+	 `(,op ,memo)
+	 `(,(first op) ,memo ,@(rest op))))
+   ops :initial-value exp))
